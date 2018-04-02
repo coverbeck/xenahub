@@ -1,0 +1,6 @@
+Place information about your datahub here.
+
+It will show up when you go to:
+https://xenabrowser.net/datapages/?hub=https://[your hub address here]
+
+You can use **Markdown** to format your text.
