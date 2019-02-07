@@ -1,4 +1,4 @@
-version: '3'
+version: '2.1'
 
 services:
   xena:
@@ -7,7 +7,11 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - 7222:7222
-      - 7223:7223
+      - 7222:7222 # http
+      - 7223:7223 # https
     volumes:
-      - /home/ubuntu/xenahub/xena:/root/xena
+      - ${PWD}/xena:/root/xena
+    group_add:
+      # The number of the group owning these xena files.
+      # To retrieve: getent group GROUPNAME
+      - 600

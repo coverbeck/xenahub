@@ -8,4 +8,4 @@ CMD java -jar /ucsc_xena/cavm-0.22.0-standalone.jar \
 	--no-gui \
 	--logfile /dev/stdout \
 	--certfile /root/xena/cert/xena.treehouse.gi.ucsc.edu.crt \
-	--keyfile /root/xena/cert/xena.treehouse.gi.ucsc.edu.8.key
+	--keyfile /root/xena/cert/xena.treehouse.gi.ucsc.edu.pkcs8.key
