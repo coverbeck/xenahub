@@ -2,13 +2,13 @@ version: '2.1'
 
 services:
   xena:
-    image: ${USER}/xenahub:no-certs
+    image: ${USER}/xenahub:no-certs-0.24.0
     build:
       context: .
       dockerfile: Dockerfile.no-certs
     ports:
-      - 7222:7222 # http
-      - 7223:7223 # https
+      - 7222:7222 # http,  format is host port:container port
+      - 7223:7223 # https, format is host port:container port
     volumes:
       - ${PWD}/xena:/root/xena
     group_add:
