@@ -8,4 +8,4 @@ down:
 	docker-compose down
 
 load:
-	docker exec xenahub_xena_1 java -jar /ucsc_xena/cavm-0.22.0-standalone.jar --load /root/xena/files/$(file)
+	docker exec xenahub_xena_1 java -jar /ucsc_xena/cavm-0.24.0-standalone.jar --load /root/xena/files/$(file)

@@ -9,7 +9,8 @@ Stand-alone Dockerized Xena Hub
 
 ## Notes
 You will need to provide a certificate file and keyfile.
-They should be placed in the xena/certs subdirectory.
+They should be placed in the xena/certs subdirectory. (When running in standalone mode.
+See below for running behind a reverse proxy.)
 
 The hub must be accessible at the URL that the certificate is for.
 Otherwise you will get an "ERR_CERT_COMMON_NAME_INVALID" error.
@@ -43,3 +44,47 @@ To find the desired group id:
 If you get the following error, set the `xena` dir to be group-writable:
 
 `Error opening database: "Could not save properties /root/xena/database.lock.db"`
+
+## Running behind Apache reverse proxy
+This is how to set it up on a shared server running on a high-level port, with Apache proxying to it.
+Instructions may be approximate.
+
+### DNS
+Set up a CNAME to your shared server with your hub URL:
+
+xenahub.example.com 28800 CNAME sharedserver.example.com
+
+### Apache
+Apache is responsible for holding the certificates for the `xenahub.example.com` site in this mode.
+For example, store in `/etc/httpd/xena_certs`:
+`chain.crt  xena.crt  xena.csr  xena.key`
+
+Then, in `/etc/httpd/conf.d/ssl.conf`, include the following VirtualHost.
+This will send https requests to Xena's 7223 (https) port. ProxyPreserveHost ensures that xena knows
+that its hostname is xenahub.example.com instead of 127.0.0.1.
+
+```
+<VirtualHost *:443>
+  ServerName xenahub.example.com
+  SSLEngine on
+  SSLProtocol all -SSLv2 -SSLv3
+  SSLCipherSuite HIGH:3DES:!aNULL:!MD5:!SEED:!IDEA
+  SSLCertificateFile /etc/httpd/xena_certs/xena.crt
+  SSLCertificateKeyFile /etc/httpd/xena_certs/xena.key
+  SSLCertificateChainFile /etc/httpd/xena_certs/chain.crt
+
+  ProxyRequests Off
+  ProxyPreserveHost On
+  SSLProxyEngine On
+  SSLProxyVerify none
+  SSLProxyCheckPeerCN off
+  SSLProxyCheckPeerName off
+  SSLProxyCheckPeerExpire off
+  ProxyPass "/"  "https://127.0.0.1:7223/"
+  ProxyPassReverse "/"  "https://127.0.0.1:7223/"
+</VirtualHost>
+```
+
+### Xena Docker
+For behind reverse proxy, you will want to use the no-certs configuration & docker build.
+This is currently the default.
