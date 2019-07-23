@@ -1,3 +1,4 @@
+[![Docker Repository on Quay](https://quay.io/repository/coverbeck/xenahub/status "Docker Repository on Quay")](https://quay.io/repository/coverbeck/xenahub)
 # Overview
 
 The .dockstore.yml should provide enough information to programatically
