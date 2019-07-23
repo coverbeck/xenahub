@@ -1,90 +1,23 @@
-# xenahub
-Stand-alone Dockerized Xena Hub
+# Overview
 
-## Requirements:
-- docker
-- docker-compose
-- make (optional)
+The .dockstore.yml should provide enough information to programatically
+run an instance of a Xena instance. This includes not only running Xena, but loading
+it up with data.
 
+This is an attempt for the docker-compose defined at https://github.com/coverbeck/xenahub,
+i.e., once this is all worked out, the files would be checked into that repo.
 
-## Notes
-You will need to provide a certificate file and keyfile.
-They should be placed in the xena/certs subdirectory. (When running in standalone mode.
-See below for running behind a reverse proxy.)
+## Example Usage by a client
 
-The hub must be accessible at the URL that the certificate is for.
-Otherwise you will get an "ERR_CERT_COMMON_NAME_INVALID" error.
+1. Client downloads index files from Dockstore (docker-compose.yml and README.md).
+2. Client downloads genomics data for Xena
+    * Either using one of the pre-defined JSON files, which has references to genomics datasets on the web; Note that this isn't a very likely use case for Xena, as you would typically only install your own instance to visualize private data, but it's useful as example for services in general.
+    * And/or generating a template JSON, which the user fills in, either manually or through some nice UI, and downloads.
+3. Client runs the commands in the `scripts` section.
 
-## Hosted Files
-To load a data file into xenahub, you will need two files:
-- the TSV data file itself, eg `example.tsv`. This must not be gzipped.
-- a xena-formatted metadata file, `example.tsv.json`
+## Issues/Fuzzy Stuff
 
-Place both of these in the`xenahub/xena/files` directory.
-Then, from the `xenahub` directory, run:
-
-`make load file=example.tsv`
-
-The request will complete within a few seconds and the file will then load asynchronously into the xena db.
-Leave the TSV file within the `files` subdirectory, or the download link on its xena page will not work.
-
-For backups of the metadata for Treehouse's hosted files, see [the reference-file-info repo](https://github.com/UCSC-Treehouse/reference-file-info).
-
-## Root-Squash
-If your xena files are stored on an NFS mount that has been "root-squashed", it is a little
-bit complicated to make the permissions work.
-
-The way I am doing it is to make everything group-readable, then run the docker with user
-root (the default) but the same group id as the group on the host.
-You will have to edit your docker-compose.yml file to update the group ID to the correct one.
-To find the desired group id:
-
-`getent group GROUPNAME`
-
-If you get the following error, set the `xena` dir to be group-writable:
-
-`Error opening database: "Could not save properties /root/xena/database.lock.db"`
-
-## Running behind Apache reverse proxy
-This is how to set it up on a shared server running on a high-level port, with Apache proxying to it.
-Instructions may be approximate.
-
-### DNS
-Set up a CNAME to your shared server with your hub URL:
-
-xenahub.example.com 28800 CNAME sharedserver.example.com
-
-### Apache
-Apache is responsible for holding the certificates for the `xenahub.example.com` site in this mode.
-For example, store in `/etc/httpd/xena_certs`:
-`chain.crt  xena.crt  xena.csr  xena.key`
-
-Then, in `/etc/httpd/conf.d/ssl.conf`, include the following VirtualHost.
-This will send https requests to Xena's 7223 (https) port. ProxyPreserveHost ensures that xena knows
-that its hostname is xenahub.example.com instead of 127.0.0.1.
-
-```
-<VirtualHost *:443>
-  ServerName xenahub.example.com
-  SSLEngine on
-  SSLProtocol all -SSLv2 -SSLv3
-  SSLCipherSuite HIGH:3DES:!aNULL:!MD5:!SEED:!IDEA
-  SSLCertificateFile /etc/httpd/xena_certs/xena.crt
-  SSLCertificateKeyFile /etc/httpd/xena_certs/xena.key
-  SSLCertificateChainFile /etc/httpd/xena_certs/chain.crt
-
-  ProxyRequests Off
-  ProxyPreserveHost On
-  SSLProxyEngine On
-  SSLProxyVerify none
-  SSLProxyCheckPeerCN off
-  SSLProxyCheckPeerName off
-  SSLProxyCheckPeerExpire off
-  ProxyPass "/"  "https://127.0.0.1:7223/"
-  ProxyPassReverse "/"  "https://127.0.0.1:7223/"
-</VirtualHost>
-```
-
-### Xena Docker
-For behind reverse proxy, you will want to use the no-certs configuration & docker build.
-This is currently the default.
+1. What if a user wants to add something the next day? The client would have to know to only run `postprovision`.
+2. What if there are multiple ports?
+3. Maven has resume
+4. Move targetDirectory up
